@@ -1,29 +1,21 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '../../fixtures/pagesFixture'
 import { existingUsers } from '../../test-data/userData'
 
 test.describe.configure({ mode: 'serial' })
 
 test.describe('login form tests', () => {
-  test('logging in works with existing account', async ({ page }) => {
-    await page.goto('localhost:8080/login')
+  test.beforeEach(async ({ loginPage }) => {
+    await loginPage.goTo()
+  })
 
-    const existingUser = existingUsers[0]
+  existingUsers.forEach(user => {
+    test(`logging in works with account: ${user.email}`, async ({ loginPage, welcomePage }) => {
+      const expectedWelcomeText = `Welcome ${user.firstName} ${user.lastName}`
+      await loginPage.loginByEmailAndPassword(user.email, user.password)
 
-    await page
-      .locator('#root form div:nth-child(1) > div > input')
-      .pressSequentially(existingUser.email)
-
-    await page
-      .locator('#root form div:nth-child(2) > div > input')
-      .pressSequentially(existingUser.password)
-
-    // Submit button
-    const button = page.locator('form .MuiButton-sizeMedium')
-    // Click on the button
-    button.click()
-
-    // Wait for 1 second until page is fully loaded
-    await page.waitForTimeout(1000)
-    await expect(page.getByText('Log out')).toBeVisible()
+      await expect(welcomePage.companyName).toHaveText("Company")
+      await expect(welcomePage.logOutButton).toBeVisible()
+      await expect(welcomePage.welcomeText).toHaveText(expectedWelcomeText)
+    })
   })
 })
