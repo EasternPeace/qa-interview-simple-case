@@ -18,4 +18,12 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }]
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:8080'
+  }
 })
